@@ -17,7 +17,7 @@ export default function CategoryTree() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Catalog Hierarchy</h2>
-        <Button variant="outline">Manage Hierarchy</Button>
+        <Button variant="outline" onClick={() => alert("Full hierarchy editor coming in next sprint (Prototype Constraint)")}>Manage Hierarchy</Button>
       </div>
 
       <div className="grid gap-4">

@@ -133,17 +133,17 @@ export default function AdminDashboard() {
               <CardDescription>Common administrative tasks</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
-              <Link href="/entities">
+              <Link href="/entities?tab=suppliers">
                 <Button variant="outline" className="w-full justify-start">
                   <Plus className="w-4 h-4 mr-2" /> Add New Supplier
                 </Button>
               </Link>
-              <Link href="/entities">
+              <Link href="/entities?tab=customers">
                 <Button variant="outline" className="w-full justify-start">
                   <Plus className="w-4 h-4 mr-2" /> Register Customer
                 </Button>
               </Link>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" onClick={() => alert("Report export simulation started...")}>
                 <FileSpreadsheet className="w-4 h-4 mr-2" /> Export Reports
               </Button>
             </CardContent>

@@ -25,8 +25,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     ],
     salesperson: [
       { href: "/sales", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/orders", label: "Orders", icon: ShoppingBag },
-      { href: "/deliveries", label: "Deliveries", icon: Package },
+      { href: "/sales", label: "Orders", icon: ShoppingBag }, // Re-using sales dashboard for now as it has the order list
+      { href: "/sales", label: "Deliveries", icon: Package }, // Re-using sales dashboard for now
     ],
     admin: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
