@@ -31,7 +31,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     admin: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
       { href: "/inventory", label: "Inventory", icon: Package },
-      { href: "/suppliers", label: "Suppliers", icon: Settings },
+      { href: "/entities", label: "Entities", icon: Settings },
     ]
   };
 

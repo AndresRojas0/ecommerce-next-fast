@@ -10,6 +10,7 @@ import CustomerCart from "@/pages/customer-cart";
 import SalesDashboard from "@/pages/sales-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminInventory from "@/pages/admin-inventory";
+import AdminEntities from "@/pages/admin-entities";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/sales" component={SalesDashboard} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/inventory" component={AdminInventory} />
+      <Route path="/entities" component={AdminEntities} />
       
       {/* Catch-all for 404 */}
       <Route component={NotFound} />
