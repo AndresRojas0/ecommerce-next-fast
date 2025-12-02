@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout";
-import { useStore } from "@/lib/store";
+import { useProducts, useBulkCreateProducts, useSuppliers, useSubcategories } from "@/lib/hooks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,18 +8,22 @@ import { Upload, FileSpreadsheet, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRef } from "react";
 import * as XLSX from 'xlsx';
+import type { InsertProduct } from "@shared/schema";
 
 export default function AdminInventory() {
-  const { products, bulkUpsertProducts } = useStore();
+  const { data: products = [] } = useProducts();
+  const { data: suppliers = [] } = useSuppliers();
+  const { data: subcategories = [] } = useSubcategories();
+  const bulkCreateProducts = useBulkCreateProducts();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
@@ -28,18 +32,19 @@ export default function AdminInventory() {
         const data = XLSX.utils.sheet_to_json(ws);
         
         // Map Spanish columns to English schema
-        const mappedData = data.map((row: any) => ({
-          supplierId: row['Proveedor'] || 'unknown',
-          article: row['Artículo'],
-          code: row['Código'],
-          name: row['Descripción'],
-          categoryTags: row['Categoría'] ? String(row['Categoría']).split(',').map(s => s.trim()) : [],
-          imageId: row['Imagen'],
-          price: 0, // Default, as price wasn't in the requested excel spec
-          description: row['Descripción']
+        const mappedData: InsertProduct[] = data.map((row: any) => ({
+          slug: `product-${Math.random().toString(36).substr(2, 9)}`,
+          supplierId: suppliers[0]?.id || 1, // Use first supplier as default
+          article: row['Artículo'] || undefined,
+          code: row['Código'] || undefined,
+          name: row['Descripción'] || 'Imported Product',
+          description: row['Descripción'] || '',
+          categoryTags: row['Categoría'] ? String(row['Categoría']).split(',').map(s => s.trim()) : undefined,
+          price: 0,
+          subcategorySlug: subcategories[0]?.slug || 'samsung', // Default subcategory
         }));
 
-        bulkUpsertProducts(mappedData);
+        await bulkCreateProducts.mutateAsync(mappedData);
 
         toast({
           title: "Import Successful",

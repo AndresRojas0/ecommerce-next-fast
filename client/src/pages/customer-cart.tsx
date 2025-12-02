@@ -1,5 +1,6 @@
 import { Layout } from "@/components/layout";
 import { useStore } from "@/lib/store";
+import { useProducts, useCustomers, useCreatePurchaseOrder } from "@/lib/hooks";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,10 +11,13 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 
 export default function CustomerCart() {
-  const { cart, products, removeFromCart, clearCart, submitOrder, customers } = useStore();
+  const { cart, removeFromCart, clearCart } = useStore();
+  const { data: products = [] } = useProducts();
+  const { data: customers = [] } = useCustomers();
+  const createOrder = useCreatePurchaseOrder();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+  const [selectedCustomer, setSelectedCustomer] = useState<number | null>(null);
 
   const cartItems = cart.map(item => {
     const product = products.find(p => p.id === item.productId);
@@ -27,7 +31,7 @@ export default function CustomerCart() {
     return sum + (item.product ? item.product.price * item.quantity : 0);
   }, 0);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedCustomer) {
       toast({
         variant: "destructive",
@@ -37,12 +41,27 @@ export default function CustomerCart() {
       return;
     }
     
-    submitOrder(selectedCustomer);
-    toast({
-      title: "Order Submitted",
-      description: "Your purchase order has been sent to sales.",
-    });
-    setLocation('/shop');
+    try {
+      await createOrder.mutateAsync({
+        customerId: selectedCustomer,
+        status: "pending",
+        items: cart,
+      });
+      
+      clearCart();
+      
+      toast({
+        title: "Order Submitted",
+        description: "Your purchase order has been sent to sales.",
+      });
+      setLocation('/shop');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to submit order. Please try again.",
+      });
+    }
   };
 
   if (cartItems.length === 0) {
@@ -119,13 +138,13 @@ export default function CustomerCart() {
 
                 <div className="pt-4 space-y-2">
                   <label className="text-sm font-medium">Select Customer Profile</label>
-                  <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                  <Select value={selectedCustomer?.toString()} onValueChange={(val) => setSelectedCustomer(parseInt(val))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Customer" />
                     </SelectTrigger>
                     <SelectContent>
                       {customers.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

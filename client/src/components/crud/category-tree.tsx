@@ -1,4 +1,4 @@
-import { useStore } from "@/lib/store";
+import { useCollections, useCategories, useSubcollections, useSubcategories } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronRight, Folder, FolderOpen, Tag, Layers } from "lucide-react";
@@ -6,7 +6,10 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 export default function CategoryTree() {
-  const { collections, categories, subcollections, subcategories } = useStore();
+  const { data: collections = [] } = useCollections();
+  const { data: categories = [] } = useCategories();
+  const { data: subcollections = [] } = useSubcollections();
+  const { data: subcategories = [] } = useSubcategories();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggle = (id: string) => {

@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout";
-import { useStore, PurchaseOrder, Product } from "@/lib/store";
+import { usePurchaseOrders, useCustomers, useProducts, useCreateDeliveryNote } from "@/lib/hooks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,12 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, AlertTriangle } from "lucide-react";
+import type { PurchaseOrder, Product } from "@shared/schema";
 
 export default function SalesDashboard() {
-  const { purchaseOrders, customers, products, createDeliveryNote } = useStore();
+  const { data: purchaseOrders = [] } = usePurchaseOrders();
+  const { data: customers = [] } = useCustomers();
+  const { data: products = [] } = useProducts();
+  const createDeliveryNote = useCreateDeliveryNote();
   const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
-  const [deliveryQuantities, setDeliveryQuantities] = useState<Record<string, number>>({});
+  const [deliveryQuantities, setDeliveryQuantities] = useState<Record<number, number>>({});
 
   const pendingOrders = purchaseOrders.filter(o => o.status === 'pending');
   const processedOrders = purchaseOrders.filter(o => o.status === 'processed');
@@ -34,22 +38,45 @@ export default function SalesDashboard() {
     setDeliveryQuantities(initial);
   };
 
-  const handleCreateDeliveryNote = () => {
+  const handleCreateDeliveryNote = async () => {
     if (!selectedOrder) return;
 
     const deliveredItems = Object.entries(deliveryQuantities).map(([productId, quantity]) => ({
-      productId,
+      productId: parseInt(productId),
       quantity
     }));
 
-    createDeliveryNote(selectedOrder.id, deliveredItems);
-    
-    toast({
-      title: "Delivery Note Created",
-      description: "Inventory adjusted and missing items log generated.",
-    });
-    
-    setSelectedOrder(null);
+    // Calculate missing items
+    const missingItems = selectedOrder.items.map(orderItem => {
+      const delivered = deliveredItems.find(d => d.productId === orderItem.productId);
+      const deliveredQty = delivered ? delivered.quantity : 0;
+      const missingQty = Math.max(0, orderItem.quantity - deliveredQty);
+      
+      return missingQty > 0 
+        ? { productId: orderItem.productId, missingQuantity: missingQty }
+        : null;
+    }).filter((item): item is { productId: number; missingQuantity: number } => item !== null);
+
+    try {
+      await createDeliveryNote.mutateAsync({
+        purchaseOrderId: selectedOrder.id,
+        items: deliveredItems,
+        missingItems,
+      });
+      
+      toast({
+        title: "Delivery Note Created",
+        description: "Inventory adjusted and missing items log generated.",
+      });
+      
+      setSelectedOrder(null);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create delivery note.",
+      });
+    }
   };
 
   return (

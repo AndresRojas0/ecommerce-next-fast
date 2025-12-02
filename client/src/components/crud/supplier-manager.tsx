@@ -1,4 +1,4 @@
-import { useStore } from "@/lib/store";
+import { useSuppliers, useCreateSupplier } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,13 +7,13 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { nanoid } from "nanoid";
 
 export default function SupplierManager() {
-  const { suppliers, addSupplier } = useStore();
+  const { data: suppliers = [] } = useSuppliers();
+  const createSupplier = useCreateSupplier();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -21,28 +21,21 @@ export default function SupplierManager() {
     contact: ""
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.name || !formData.contact) {
       toast({ variant: "destructive", title: "Missing Fields", description: "Name and Contact are required." });
       return;
     }
 
-    if (editingId) {
-      // In a real app we would have an update action, for now we can use a store hack or add an update action
-      // For prototype speed, we'll just assume add works for new ones. 
-      // TO DO: Add updateSupplier to store.
-      toast({ title: "Not Implemented", description: "Update logic would go here." });
-    } else {
-      addSupplier({
-        id: `sup-${nanoid(4)}`,
-        ...formData
-      });
+    try {
+      await createSupplier.mutateAsync(formData);
       toast({ title: "Supplier Added", description: `${formData.name} has been created.` });
+      setIsDialogOpen(false);
+      setFormData({ name: "", contact: "" });
+      setEditingId(null);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to create supplier." });
     }
-    
-    setIsDialogOpen(false);
-    setFormData({ name: "", contact: "" });
-    setEditingId(null);
   };
 
   return (

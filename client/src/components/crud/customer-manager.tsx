@@ -1,4 +1,4 @@
-import { useStore } from "@/lib/store";
+import { useCustomers, useCreateCustomer } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { nanoid } from "nanoid";
 
 export default function CustomerManager() {
-  const { customers } = useStore();
+  const { data: customers = [] } = useCustomers();
+  const createCustomer = useCreateCustomer();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
@@ -22,9 +22,20 @@ export default function CustomerManager() {
     taxpayerId: ""
   });
 
-  const handleSubmit = () => {
-    toast({ title: "Demo Mode", description: "Customer creation simulated." });
-    setIsDialogOpen(false);
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.taxpayerId || !formData.phone || !formData.address) {
+      toast({ variant: "destructive", title: "Missing Fields", description: "All fields are required." });
+      return;
+    }
+
+    try {
+      await createCustomer.mutateAsync(formData);
+      toast({ title: "Customer Registered", description: `${formData.name} has been added.` });
+      setIsDialogOpen(false);
+      setFormData({ name: "", address: "", phone: "", taxpayerId: "" });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to register customer." });
+    }
   };
 
   return (

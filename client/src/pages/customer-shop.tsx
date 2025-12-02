@@ -1,5 +1,6 @@
 import { Layout } from "@/components/layout";
-import { useStore, Product } from "@/lib/store";
+import { useStore } from "@/lib/store";
+import { useProducts, useCollections, useCategories, useSubcollections, useSubcategories } from "@/lib/hooks";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,16 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState, useMemo } from "react";
 import { Search, Filter, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import type { Product } from "@shared/schema";
 
 export default function CustomerShop() {
-  const { 
-    products, 
-    collections, 
-    categories, 
-    subcollections, 
-    subcategories,
-    addToCart 
-  } = useStore();
+  const { data: products = [] } = useProducts();
+  const { data: collections = [] } = useCollections();
+  const { data: categories = [] } = useCategories();
+  const { data: subcollections = [] } = useSubcollections();
+  const { data: subcategories = [] } = useSubcategories();
+  const { addToCart } = useStore();
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");

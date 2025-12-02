@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout";
-import { useStore } from "@/lib/store";
+import { useProducts, useSuppliers, useCustomers, usePurchaseOrders } from "@/lib/hooks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +8,10 @@ import { Link } from "wouter";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
 export default function AdminDashboard() {
-  const { products, suppliers, customers, purchaseOrders } = useStore();
+  const { data: products = [] } = useProducts();
+  const { data: suppliers = [] } = useSuppliers();
+  const { data: customers = [] } = useCustomers();
+  const { data: purchaseOrders = [] } = usePurchaseOrders();
 
   const stats = [
     { label: "Total Products", value: products.length, icon: Package, change: "+12%" },
