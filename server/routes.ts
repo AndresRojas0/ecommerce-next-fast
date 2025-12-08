@@ -26,6 +26,18 @@ export async function registerRoutes(
     res.json(collection);
   });
   
+  app.put("/api/collections/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    const collection = await storage.updateCollection(id, req.body);
+    res.json(collection);
+  });
+  
+  app.delete("/api/collections/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    await storage.deleteCollection(id);
+    res.json({ success: true });
+  });
+  
   // Categories
   app.get("/api/categories", async (req, res) => {
     const categories = await storage.getCategories();
@@ -37,6 +49,18 @@ export async function registerRoutes(
     if (!result.success) return res.status(400).json({ error: result.error });
     const category = await storage.createCategory(result.data);
     res.json(category);
+  });
+  
+  app.put("/api/categories/:slug", async (req, res) => {
+    const slug = req.params.slug;
+    const category = await storage.updateCategory(slug, req.body);
+    res.json(category);
+  });
+  
+  app.delete("/api/categories/:slug", async (req, res) => {
+    const slug = req.params.slug;
+    await storage.deleteCategory(slug);
+    res.json({ success: true });
   });
   
   // Subcollections
@@ -52,6 +76,18 @@ export async function registerRoutes(
     res.json(subcollection);
   });
   
+  app.put("/api/subcollections/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    const subcollection = await storage.updateSubcollection(id, req.body);
+    res.json(subcollection);
+  });
+  
+  app.delete("/api/subcollections/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    await storage.deleteSubcollection(id);
+    res.json({ success: true });
+  });
+  
   // Subcategories
   app.get("/api/subcategories", async (req, res) => {
     const subcategories = await storage.getSubcategories();
@@ -63,6 +99,18 @@ export async function registerRoutes(
     if (!result.success) return res.status(400).json({ error: result.error });
     const subcategory = await storage.createSubcategory(result.data);
     res.json(subcategory);
+  });
+  
+  app.put("/api/subcategories/:slug", async (req, res) => {
+    const slug = req.params.slug;
+    const subcategory = await storage.updateSubcategory(slug, req.body);
+    res.json(subcategory);
+  });
+  
+  app.delete("/api/subcategories/:slug", async (req, res) => {
+    const slug = req.params.slug;
+    await storage.deleteSubcategory(slug);
+    res.json({ success: true });
   });
   
   // Suppliers
@@ -107,6 +155,18 @@ export async function registerRoutes(
   app.post("/api/products/bulk", async (req, res) => {
     const products = await storage.bulkCreateProducts(req.body);
     res.json(products);
+  });
+  
+  app.put("/api/products/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    const product = await storage.updateProduct(id, req.body);
+    res.json(product);
+  });
+  
+  app.delete("/api/products/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    await storage.deleteProduct(id);
+    res.json({ success: true });
   });
   
   // Customers

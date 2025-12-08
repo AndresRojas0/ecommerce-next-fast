@@ -2,7 +2,8 @@ import type {
   Collection, Category, Subcollection, Subcategory,
   Supplier, Image, Product, Customer,
   PurchaseOrder, DeliveryNote,
-  InsertSupplier, InsertCustomer, InsertPurchaseOrder, InsertDeliveryNote, InsertProduct
+  InsertSupplier, InsertCustomer, InsertPurchaseOrder, InsertDeliveryNote, InsertProduct,
+  InsertCollection, InsertCategory, InsertSubcollection, InsertSubcategory
 } from "@shared/schema";
 
 const API_BASE = "/api";
@@ -27,36 +28,64 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 // Collections
 export const collectionsAPI = {
   getAll: () => fetchAPI<Collection[]>("/collections"),
-  create: (data: Omit<Collection, "id">) => fetchAPI<Collection>("/collections", {
+  create: (data: InsertCollection) => fetchAPI<Collection>("/collections", {
     method: "POST",
     body: JSON.stringify(data),
+  }),
+  update: (id: number, data: Partial<InsertCollection>) => fetchAPI<Collection>(`/collections/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  }),
+  delete: (id: number) => fetchAPI<{ success: boolean }>(`/collections/${id}`, {
+    method: "DELETE",
   }),
 };
 
 // Categories
 export const categoriesAPI = {
   getAll: () => fetchAPI<Category[]>("/categories"),
-  create: (data: Category) => fetchAPI<Category>("/categories", {
+  create: (data: InsertCategory) => fetchAPI<Category>("/categories", {
     method: "POST",
     body: JSON.stringify(data),
+  }),
+  update: (slug: string, data: Partial<InsertCategory>) => fetchAPI<Category>(`/categories/${slug}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  }),
+  delete: (slug: string) => fetchAPI<{ success: boolean }>(`/categories/${slug}`, {
+    method: "DELETE",
   }),
 };
 
 // Subcollections
 export const subcollectionsAPI = {
   getAll: () => fetchAPI<Subcollection[]>("/subcollections"),
-  create: (data: Omit<Subcollection, "id">) => fetchAPI<Subcollection>("/subcollections", {
+  create: (data: InsertSubcollection) => fetchAPI<Subcollection>("/subcollections", {
     method: "POST",
     body: JSON.stringify(data),
+  }),
+  update: (id: number, data: Partial<InsertSubcollection>) => fetchAPI<Subcollection>(`/subcollections/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  }),
+  delete: (id: number) => fetchAPI<{ success: boolean }>(`/subcollections/${id}`, {
+    method: "DELETE",
   }),
 };
 
 // Subcategories
 export const subcategoriesAPI = {
   getAll: () => fetchAPI<Subcategory[]>("/subcategories"),
-  create: (data: Subcategory) => fetchAPI<Subcategory>("/subcategories", {
+  create: (data: InsertSubcategory) => fetchAPI<Subcategory>("/subcategories", {
     method: "POST",
     body: JSON.stringify(data),
+  }),
+  update: (slug: string, data: Partial<InsertSubcategory>) => fetchAPI<Subcategory>(`/subcategories/${slug}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  }),
+  delete: (slug: string) => fetchAPI<{ success: boolean }>(`/subcategories/${slug}`, {
+    method: "DELETE",
   }),
 };
 
@@ -80,6 +109,13 @@ export const productsAPI = {
   create: (data: InsertProduct) => fetchAPI<Product>("/products", {
     method: "POST",
     body: JSON.stringify(data),
+  }),
+  update: (id: number, data: Partial<InsertProduct>) => fetchAPI<Product>(`/products/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  }),
+  delete: (id: number) => fetchAPI<{ success: boolean }>(`/products/${id}`, {
+    method: "DELETE",
   }),
   bulkCreate: (data: InsertProduct[]) => fetchAPI<Product[]>("/products/bulk", {
     method: "POST",
