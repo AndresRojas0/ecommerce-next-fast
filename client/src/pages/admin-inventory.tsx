@@ -93,6 +93,42 @@ export default function AdminInventory() {
       (p.article && p.article.toLowerCase().includes(search.toLowerCase())),
   );
 
+  const getFieldValue = (row: any, ...keys: string[]): string | undefined => {
+    for (const key of keys) {
+      if (row[key] !== undefined && row[key] !== null && row[key] !== '') {
+        return String(row[key]);
+      }
+    }
+    return undefined;
+  };
+
+  const getNameFromDescription = (description: string): string => {
+    if (!description) return "Imported Product";
+    const words = description.trim().split(/\s+/);
+    return words.slice(0, 3).join(' ') || "Imported Product";
+  };
+
+  const findSupplierByName = (name: string | undefined): number => {
+    if (!name) return suppliers[0]?.id || 1;
+    const found = suppliers.find(s => 
+      s.name.toLowerCase() === name.toLowerCase() ||
+      s.name.toLowerCase().includes(name.toLowerCase())
+    );
+    return found?.id || suppliers[0]?.id || 1;
+  };
+
+  const findSubcategoryByCategory = (category: string | undefined): string => {
+    if (!category) return subcategories[0]?.slug || "default";
+    const categoryLower = category.toLowerCase().trim();
+    const found = subcategories.find(s => 
+      s.slug.toLowerCase() === categoryLower ||
+      s.name.toLowerCase() === categoryLower ||
+      s.slug.toLowerCase().includes(categoryLower) ||
+      s.name.toLowerCase().includes(categoryLower)
+    );
+    return found?.slug || subcategories[0]?.slug || "default";
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -106,21 +142,27 @@ export default function AdminInventory() {
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws);
 
-        const mappedData: InsertProduct[] = data.map((row: any) => ({
-          slug: `product-${Math.random().toString(36).substr(2, 9)}`,
-          supplierId: suppliers[0]?.id || 1,
-          article: row["Artículo"] || undefined,
-          code: row["Código"] || undefined,
-          categoryTags: row["Categoría"]
-            ? String(row["Categoría"])
-                .split(",")
-                .map((s) => s.trim())
-            : undefined,
-          name: row["Descripción"] || "Imported Product",
-          description: row["Descripción"] || "",
-          price: 0,
-          subcategorySlug: subcategories[0]?.slug || "samsung",
-        }));
+        const mappedData: InsertProduct[] = data.map((row: any) => {
+          const proveedor = getFieldValue(row, 'Proveedor', 'proveedor', 'PROVEEDOR');
+          const articulo = getFieldValue(row, 'Artículo', 'Articulo', 'Art', 'ART', 'art', 'articulo', 'ARTICULO');
+          const codigo = getFieldValue(row, 'Código', 'Codigo', 'Cod', 'COD', 'cod', 'codigo', 'CODIGO');
+          const categoria = getFieldValue(row, 'Categoría', 'Categoria', 'Categorías', 'Categorias', 'categoria', 'categoría', 'CATEGORIA');
+          const imagen = getFieldValue(row, 'Imagen', 'imagen', 'IMAGEN', 'Image', 'image');
+          const descripcion = getFieldValue(row, 'Descripción', 'Descripcion', 'descripcion', 'descripción', 'DESCRIPCION');
+          const precio = getFieldValue(row, 'Precio', 'precio', 'PRECIO', 'Price', 'price');
+
+          return {
+            slug: `product-${Math.random().toString(36).substr(2, 9)}`,
+            supplierId: findSupplierByName(proveedor),
+            article: articulo || undefined,
+            code: codigo || undefined,
+            categoryTags: categoria ? [categoria.trim()] : undefined,
+            name: getNameFromDescription(descripcion || ''),
+            description: descripcion || "",
+            price: precio ? parseFloat(precio.replace(',', '.')) || 0 : 0,
+            subcategorySlug: findSubcategoryByCategory(categoria),
+          };
+        });
 
         await bulkCreateProducts.mutateAsync(mappedData);
 
@@ -415,31 +457,18 @@ export default function AdminInventory() {
         <Card>
           <CardHeader>
             <CardTitle>Import Instructions</CardTitle>
-            <CardDescription>
-              Upload an Excel file with the following headers:
-              <span className="font-mono text-xs bg-muted px-1 rounded ml-1">
-                Proveedor
-              </span>
-              ,
-              <span className="font-mono text-xs bg-muted px-1 rounded ml-1">
-                Artículo
-              </span>
-              ,
-              <span className="font-mono text-xs bg-muted px-1 rounded ml-1">
-                Código
-              </span>
-              ,
-              <span className="font-mono text-xs bg-muted px-1 rounded ml-1">
-                Descripción
-              </span>
-              ,
-              <span className="font-mono text-xs bg-muted px-1 rounded ml-1">
-                Categoría
-              </span>
-              ,
-              <span className="font-mono text-xs bg-muted px-1 rounded ml-1">
-                Imagen
-              </span>
+            <CardDescription className="space-y-2">
+              <p>Upload an Excel file with the following headers:</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">Proveedor</span>
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">Artículo / Art</span>
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">Código / Cod</span>
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">Descripción</span>
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">Categoría</span>
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">Precio</span>
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">Imagen</span>
+              </div>
+              <p className="text-xs mt-2">Product name is generated from the first 3 words of Descripción. Categoría is used to match the subcategory.</p>
             </CardDescription>
           </CardHeader>
         </Card>
