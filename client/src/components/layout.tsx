@@ -16,7 +16,18 @@ import { Toaster } from "@/components/ui/toaster";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { currentUserRole, setCurrentUserRole, cart } = useStore();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  const roleDefaultRoutes = {
+    customer: "/shop",
+    salesperson: "/sales",
+    admin: "/admin",
+  };
+
+  const handleRoleSwitch = (role: 'customer' | 'salesperson' | 'admin') => {
+    setCurrentUserRole(role);
+    setLocation(roleDefaultRoutes[role]);
+  };
 
   const navItems = {
     customer: [
@@ -47,7 +58,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             variant={currentUserRole === role ? "default" : "outline"}
             size="sm"
             className="text-xs h-7 px-2 capitalize"
-            onClick={() => setCurrentUserRole(role)}
+            onClick={() => handleRoleSwitch(role)}
             data-testid={`button-role-${role}`}
           >
             {role === 'salesperson' ? 'Sales' : role.charAt(0).toUpperCase() + role.slice(1)}
