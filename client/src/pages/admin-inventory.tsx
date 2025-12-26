@@ -53,6 +53,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Plus, Pencil, Trash2, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRef, useState } from "react";
@@ -71,6 +72,9 @@ export default function AdminInventory() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -86,12 +90,54 @@ export default function AdminInventory() {
     slug: "",
   });
 
-  const filteredProducts = products.filter(
-    (p) =>
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = 
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       (p.code && p.code.toLowerCase().includes(search.toLowerCase())) ||
-      (p.article && p.article.toLowerCase().includes(search.toLowerCase())),
-  );
+      (p.article && p.article.toLowerCase().includes(search.toLowerCase()));
+    const matchesCategory = categoryFilter === "all" || p.subcategorySlug === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  const toggleProductSelection = (productId: number) => {
+    setSelectedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAllProducts = () => {
+    if (selectedProducts.size === filteredProducts.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(filteredProducts.map(p => p.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(
+        Array.from(selectedProducts).map(id => deleteProduct.mutateAsync(id))
+      );
+      toast({
+        title: "Products Deleted",
+        description: `${selectedProducts.size} products removed from inventory`,
+      });
+      setSelectedProducts(new Set());
+      setBulkDeleteOpen(false);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete some products",
+      });
+    }
+  };
 
   const getFieldValue = (row: any, ...keys: string[]): string | undefined => {
     for (const key of keys) {
@@ -474,34 +520,87 @@ export default function AdminInventory() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Current Inventory ({products.length})</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                className="pl-9"
-                data-testid="input-search-products"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <CardTitle>Current Inventory ({filteredProducts.length} of {products.length})</CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedProducts.size > 0 && (
+                  <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" data-testid="button-bulk-delete">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete ({selectedProducts.size})
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Products</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {selectedProducts.size} selected products? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBulkDelete} data-testid="button-confirm-bulk-delete">
+                          Delete All
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[180px]" data-testid="select-category-filter">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {subcategories.map(s => (
+                      <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="relative w-48">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search..."
+                    className="pl-9"
+                    data-testid="input-search-products"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={filteredProducts.length > 0 && selectedProducts.size === filteredProducts.length}
+                      onCheckedChange={toggleAllProducts}
+                      data-testid="checkbox-select-all"
+                    />
+                  </TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Code</TableHead>
                   <TableHead>Article</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead>Subcategory</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredProducts.map((p) => (
                   <TableRow key={p.id} data-testid={`row-product-${p.id}`}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedProducts.has(p.id)}
+                        onCheckedChange={() => toggleProductSelection(p.id)}
+                        data-testid={`checkbox-product-${p.id}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell>{p.code || "-"}</TableCell>
                     <TableCell>{p.article || "-"}</TableCell>
@@ -551,11 +650,11 @@ export default function AdminInventory() {
                 {filteredProducts.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className="text-center text-muted-foreground py-8"
                     >
-                      {search
-                        ? "No products match your search"
+                      {search || categoryFilter !== "all"
+                        ? "No products match your filters"
                         : "No products in inventory yet"}
                     </TableCell>
                   </TableRow>
