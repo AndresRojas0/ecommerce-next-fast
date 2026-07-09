@@ -1,7 +1,9 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "@shared/schema";
+
+dotenv.config({ path: ".env.local" });
 
 if (!process.env.DATABASE_URL) {
   throw new Error(

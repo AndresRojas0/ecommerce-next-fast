@@ -91,8 +91,8 @@ app.use((req, res, next) => {
   httpServer.listen(
     {
       port,
-      host: "0.0.0.0",
-      reusePort: true,
+      host: "127.0.0.1",
+      // reusePort: true, // <--- THIS IS BREAKING YOUR LOCAL MACHINE
     },
     () => {
       log(`serving on port ${port}`);
