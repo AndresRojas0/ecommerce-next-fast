@@ -11,5 +11,8 @@ export default defineConfig({
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL,
+    ssl: /neon\.tech|sslmode=require/.test(process.env.DATABASE_URL)
+      ? { rejectUnauthorized: false }
+      : false,
   },
 });
