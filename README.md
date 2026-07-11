@@ -27,24 +27,119 @@ Una aplicación de gestión de ecommerce, construida con **Next.js**, **Drizzle 
 ## 📁 Estructura de Carpetas
 
 ```
-ecommerce-next-fast/
-├── client/
-│   ├── public/
-│   └── src/
-├── dist/
-│   └── public/
-│       └── assets/
-├── script/
-├── server/
-├── shared/
+Directory structure:
+andresrojas0-ecommerce-next-fast/
+├── README.md
 ├── components.json
 ├── drizzle.config.ts
 ├── package.json
 ├── postcss.config.js
+├── replit.md
 ├── tsconfig.json
 ├── vite-plugin-meta-images.ts
 ├── vite.config.ts
-└── .env.local                 # Variables de entorno
+├── .replit
+├── attached_assets/
+│   ├── Pasted-PayloadTooLargeError-request-entity-too-large-at-readSt_1765206137087.txt
+│   └── Pasted-Role-1764509300771_1764509300773.txt
+├── client/
+│   ├── index.html
+│   └── src/
+│       ├── App.tsx
+│       ├── index.css
+│       ├── main.tsx
+│       ├── components/
+│       │   ├── layout.tsx
+│       │   ├── crud/
+│       │   │   ├── category-tree.tsx
+│       │   │   ├── customer-manager.tsx
+│       │   │   └── supplier-manager.tsx
+│       │   └── ui/
+│       │       ├── accordion.tsx
+│       │       ├── alert-dialog.tsx
+│       │       ├── alert.tsx
+│       │       ├── aspect-ratio.tsx
+│       │       ├── avatar.tsx
+│       │       ├── badge.tsx
+│       │       ├── breadcrumb.tsx
+│       │       ├── button-group.tsx
+│       │       ├── button.tsx
+│       │       ├── calendar.tsx
+│       │       ├── card.tsx
+│       │       ├── carousel.tsx
+│       │       ├── chart.tsx
+│       │       ├── checkbox.tsx
+│       │       ├── collapsible.tsx
+│       │       ├── command.tsx
+│       │       ├── context-menu.tsx
+│       │       ├── dialog.tsx
+│       │       ├── drawer.tsx
+│       │       ├── dropdown-menu.tsx
+│       │       ├── empty.tsx
+│       │       ├── field.tsx
+│       │       ├── form.tsx
+│       │       ├── hover-card.tsx
+│       │       ├── input-group.tsx
+│       │       ├── input-otp.tsx
+│       │       ├── input.tsx
+│       │       ├── item.tsx
+│       │       ├── kbd.tsx
+│       │       ├── label.tsx
+│       │       ├── menubar.tsx
+│       │       ├── navigation-menu.tsx
+│       │       ├── pagination.tsx
+│       │       ├── popover.tsx
+│       │       ├── progress.tsx
+│       │       ├── radio-group.tsx
+│       │       ├── resizable.tsx
+│       │       ├── scroll-area.tsx
+│       │       ├── select.tsx
+│       │       ├── separator.tsx
+│       │       ├── sheet.tsx
+│       │       ├── sidebar.tsx
+│       │       ├── skeleton.tsx
+│       │       ├── slider.tsx
+│       │       ├── sonner.tsx
+│       │       ├── spinner.tsx
+│       │       ├── switch.tsx
+│       │       ├── table.tsx
+│       │       ├── tabs.tsx
+│       │       ├── textarea.tsx
+│       │       ├── toast.tsx
+│       │       ├── toaster.tsx
+│       │       ├── toggle-group.tsx
+│       │       ├── toggle.tsx
+│       │       └── tooltip.tsx
+│       ├── hooks/
+│       │   ├── use-mobile.tsx
+│       │   └── use-toast.ts
+│       ├── lib/
+│       │   ├── api.ts
+│       │   ├── hooks.ts
+│       │   ├── queryClient.ts
+│       │   ├── store.ts
+│       │   └── utils.ts
+│       └── pages/
+│           ├── admin-dashboard.tsx
+│           ├── admin-entities.tsx
+│           ├── admin-inventory.tsx
+│           ├── customer-cart.tsx
+│           ├── customer-shop.tsx
+│           ├── home.tsx
+│           ├── not-found.tsx
+│           └── sales-dashboard.tsx
+├── script/
+│   └── build.ts
+├── server/
+│   ├── db.ts
+│   ├── index.ts
+│   ├── routes.ts
+│   ├── seed.ts
+│   ├── static.ts
+│   ├── storage.ts
+│   └── vite.ts
+└── shared/
+    └── schema.ts
 ```
 
 ## 🚀 Inicio Rápido
